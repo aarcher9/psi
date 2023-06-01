@@ -43,124 +43,165 @@ prec <- function(x){ format(round(x, 4), nsmall = 4) }
 
 # Analisi
 weeks <- df[,1]
-components.sold.standalone <- df[,7]
-components.sold.through.assistance.services <- df[,8]
-assistance.services.performed <- df[,9]
-total.components.income <- df[,15]
-total.assistance.services.income <- df[,15]
+sale <- list(
+        bikes = list(
+                trekking = df[,2],
+                mtb = df[,3],
+                road = df[,4]
+        ),
+        components = list(
+                alone = df[,7],
+                through.assistance = df[,8]
+        ),
+        assistance.performed = df[,9]
+)
+
+income <- list(
+        components = list(
+                total = df[,15]
+        ),
+        assistance = df[,16]
+)
+
+# Shortcut per regressione lineare
+testForDependenciesAndCorrelation <- function(X, Y, notes = "", title = "", subtitle = "", yl = "", xl = "") {
+
+        plot(
+                X, Y, bty = "l",
+                xlab = xl,
+                ylab = yl,
+                type = "p",
+                col = "blue")
+
+        lin.regr <- lm(Y ~ X)
+        r <- prec(cor(X, Y))
+        B <- prec(lin.regr$coefficients[2])
+        abline(lin.regr, col = "red")
+
+        title(
+                main = title,
+                sub = subtitle)
+        mtext(
+                paste("Corr. coef. : ", r),
+                adj = 0,
+                line = 0)
+        mtext(
+                paste("B : ", B),
+                adj = 0,
+                line = 1)
+}
+
 
 # [ 1 ] ======================================================================
-# Si osserva se ci sono relazioni (si) e di che tipo fra assistenze eseguite e componenti venduti tramite di esse
-plot(
-        assistance.services.performed,
-        components.sold.through.assistance.services,
-        type = "p",
-        col = "blue")
-
-assistance.related.components <- lm(components.sold.through.assistance.services ~ assistance.services.performed)
-
-mtext("", line = 0)
-mtext(
-        paste("Corr. coef. : ", prec(
-                cor(components.sold.through.assistance.services, assistance.services.performed))),
-        line = 1)
-mtext(
-        paste("B : ", prec(assistance.related.components$coefficients[2])),
-        line = 2)
-
+# Si osserva se ci sono relazioni (si) e di che tipo fra assistenze eseguite e componenti venduti tramite di esse. In realtà appare, ed è abbastanza ovvio, anche se ci interessa portare a termine un' analisi più fine.
+testForDependenciesAndCorrelation(
+        sale$assistance.performed, 
+        sale$components$through.assistance,
+        xl = "# assistenze",
+        yl = "# vendite componenti con assistenza")
 
 # [ 2 ] ======================================================================
-# Si prova anche ad osservare se assistenze eseguite e componenti venduti a parte sono in relazione (i clienti potrebbero essere incentivati, dopo una riparazione ad acquistare un ulteriore ricambio di scorta)
-plot(
-        assistance.services.performed,
-        components.sold.standalone,
-        type = "p",
-        col = "blue")
-
-standalone.components <- lm(components.sold.standalone ~ assistance.services.performed)
-
-mtext("", line = 0)
-mtext(
-        paste("Corr. coef. : ", prec(
-                cor(components.sold.standalone, assistance.services.performed))),
-        line = 1)
+# Si prova anche ad osservare se assistenze eseguite e componenti venduti a parte sono in relazione (i clienti potrebbero essere incentivati, dopo una riparazione ad acquistare un ulteriore ricambio di scorta).
+testForDependenciesAndCorrelation(
+        sale$assistance.performed, 
+        sale$components$alone,
+        xl = "# assistenze",
+        yl = "# vendite componenti")
 
 
-# [ E:1-2 ] ======================================================================
+# [ C:1-2 ] ======================================================================
 # Si provi, per chiarezza grafica e per concludere, a sovrapporre allo scorrere delle settimane l'andamento delle vendite di componenti tramite assistenza, quelli venduti da soli e il numero di servizi effettuati.
-plot(
-        weeks,
-        assistance.services.performed,
-        type = "l",
-        col = "red",
-        ylim = c(0, 150))
-lines(
-        weeks,
-        components.sold.through.assistance.services,
-        col = "grey")
-lines(
-        weeks,
-        components.sold.standalone,
-        col = "green")
+analysis_1_2 <- function() {
 
+        plot(
+                weeks,
+                sale$assistance.performed,
+                type = "l",
+                col = "red",
+                ylim = c(0, 150))
+        lines(
+                weeks,
+                sale$components$through.assistance,
+                col = "grey")
+        lines(
+                weeks,
+                sale$components$alone,
+                col = "green")
+}
+
+# analysis_1_2()
 
 # [ 3 ] ======================================================================
-# Si valuti il ricavo in funzione dei componenti relativi ad assistenza venduti.
-plot(
-        components.sold.through.assistance.services,
-        total.components.income,
-        type = "p",
-        col = "gray")
+# Si valuti il ricavo in funzione dei componenti relativi ad assistenza venduti e a parte, anche in funzione dei componenti venduti singolarmente.
 
-income.assistance <- lm(total.components.income ~ components.sold.through.assistance.services)
+testForDependenciesAndCorrelation(
+        sale$components$through.assistance, 
+        income$components$total,
+        xl = "# vendite componenti con assistenza",
+        yl = "# ricavi componenti totali")
 
-abline(income.assistance, col = "red")
+testForDependenciesAndCorrelation(
+        sale$components$alone, 
+        income$components$total,
+        xl = "# vendite componenti",
+        yl = "# ricavi componenti totali")
 
-mtext("", line = 0)
-mtext(
-        paste("Corr. coef. : ", prec(
-                cor(total.components.income, components.sold.through.assistance.services))),
-        line = 1)
-mtext(
-        paste("B : ", prec(income.assistance$coefficients[2])),
-        line = 2)
+# Confronto
+analysis_3_4 <- function() {
 
+        Y <- income$components$total
 
-# [ 4 ] ======================================================================
-# Si valuti il ricavo in funzione dei componenti venduti singolarmente.
-plot(
-        components.sold.standalone,
-        total.components.income,
-        type = "p",
-        col = "gray")
+        X_1 <- sale$components$through.assistance
+        X_2 <- sale$components$alone
 
-income.standalone <- lm(total.components.income ~ components.sold.standalone)
+        plot(
+                X_1,
+                Y,
+                type = "p",
+                col = "green",
+                xlim = c(0, 150),
+                ylim = c(0, 2000))
 
-abline(income.standalone, col = "red")
+        abline(lm(Y ~ X_1), col = "darkgreen")
 
-mtext("", line = 0)
-mtext(
-        paste("Corr. coef. : ", prec(
-                cor(total.components.income, components.sold.standalone))),
-        line = 1)
-mtext(
-        paste("B : ", prec(income.standalone$coefficients[2])),
-        line = 2)
+        points(
+                X_2,
+                Y,
+                col = "magenta")
 
+        abline(lm(Y ~ X_2), col = "purple")
+}
 
-# [ E:3-4 ] ======================================================================
-# Si confrontino i fit.
-plot(
-        components.sold.through.assistance.services,
-        total.components.income,
-        type = "p",
-        col = "green",
-        xlim = c(0, 150),
-        ylim = c(300, 2000))
-abline(income.assistance, col = "darkgreen")
+# analysis_3_4()
 
-points(
-        components.sold.standalone,
-        total.components.income,
-        col = "magenta")
-abline(income.standalone, col = "purple")
+# [ 5 ] ======================================================================
+analysis_5 <- function() {
+
+        X <- weeks
+        Y <- sale$assistance.performed
+        Y_1 <- sale$bikes$trekking
+        Y_2 <- sale$bikes$mtb
+        Y_3 <- sale$bikes$road
+
+        # plot(
+        #         X,
+        #         Y,
+        #         type = "l",
+        #         col = "black")
+
+        plot(
+                X,
+                c(1:52),
+                col = "blue")
+        # lines(
+        #         X,
+        #         Y_2,
+        #         col = "green")
+        # lines(
+        #         X,
+        #         Y_3,
+        #         col = "magenta")
+
+}
+
+analysis_5()
