@@ -40,6 +40,7 @@ columnsMap <- c(
 prec <- function(x){ format(round(x, 4), nsmall = 4) }
 
 
+
 # Analisi
 weeks <- df[,1]
 components.sold.standalone <- df[,7]
@@ -48,11 +49,8 @@ assistance.services.performed <- df[,9]
 total.components.income <- df[,15]
 total.assistance.services.income <- df[,15]
 
+# [ 1 ] ======================================================================
 # Si osserva se ci sono relazioni (si) e di che tipo fra assistenze eseguite e componenti venduti tramite di esse
-rxy <- cor(
-        components.sold.through.assistance.services, 
-        assistance.services.performed)
-
 plot(
         assistance.services.performed,
         components.sold.through.assistance.services,
@@ -63,18 +61,16 @@ assistance.related.components <- lm(components.sold.through.assistance.services 
 
 mtext("", line = 0)
 mtext(
-        paste("Corr. coef. : ", prec(rxy)),
+        paste("Corr. coef. : ", prec(
+                cor(components.sold.through.assistance.services, assistance.services.performed))),
         line = 1)
 mtext(
         paste("B : ", prec(assistance.related.components$coefficients[2])),
         line = 2)
 
 
+# [ 2 ] ======================================================================
 # Si prova anche ad osservare se assistenze eseguite e componenti venduti a parte sono in relazione (i clienti potrebbero essere incentivati, dopo una riparazione ad acquistare un ulteriore ricambio di scorta)
-rxy <- cor(
-        components.sold.standalone, 
-        assistance.services.performed)
-
 plot(
         assistance.services.performed,
         components.sold.standalone,
@@ -85,22 +81,86 @@ standalone.components <- lm(components.sold.standalone ~ assistance.services.per
 
 mtext("", line = 0)
 mtext(
-        paste("Corr. coef. : ", prec(rxy)),
+        paste("Corr. coef. : ", prec(
+                cor(components.sold.standalone, assistance.services.performed))),
         line = 1)
 
 
-# Proviamo a sovrapporli e vederne l'andamento nelle varie settimane
+# [ E:1-2 ] ======================================================================
+# Si provi, per chiarezza grafica e per concludere, a sovrapporre allo scorrere delle settimane l'andamento delle vendite di componenti tramite assistenza, quelli venduti da soli e il numero di servizi effettuati.
 plot(
         weeks,
-        components.sold.through.assistance.services,
+        assistance.services.performed,
         type = "l",
         col = "red",
         ylim = c(0, 150))
 lines(
         weeks,
-        components.sold.standalone,
-        col = "green")
+        components.sold.through.assistance.services,
+        col = "grey")
 lines(
         weeks,
-        assistance.services.performed,
-        col = "grey")
+        components.sold.standalone,
+        col = "green")
+
+
+# [ 3 ] ======================================================================
+# Si valuti il ricavo in funzione dei componenti relativi ad assistenza venduti.
+plot(
+        components.sold.through.assistance.services,
+        total.components.income,
+        type = "p",
+        col = "gray")
+
+income.assistance <- lm(total.components.income ~ components.sold.through.assistance.services)
+
+abline(income.assistance, col = "red")
+
+mtext("", line = 0)
+mtext(
+        paste("Corr. coef. : ", prec(
+                cor(total.components.income, components.sold.through.assistance.services))),
+        line = 1)
+mtext(
+        paste("B : ", prec(income.assistance$coefficients[2])),
+        line = 2)
+
+
+# [ 4 ] ======================================================================
+# Si valuti il ricavo in funzione dei componenti venduti singolarmente.
+plot(
+        components.sold.standalone,
+        total.components.income,
+        type = "p",
+        col = "gray")
+
+income.standalone <- lm(total.components.income ~ components.sold.standalone)
+
+abline(income.standalone, col = "red")
+
+mtext("", line = 0)
+mtext(
+        paste("Corr. coef. : ", prec(
+                cor(total.components.income, components.sold.standalone))),
+        line = 1)
+mtext(
+        paste("B : ", prec(income.standalone$coefficients[2])),
+        line = 2)
+
+
+# [ E:3-4 ] ======================================================================
+# Si confrontino i fit.
+plot(
+        components.sold.through.assistance.services,
+        total.components.income,
+        type = "p",
+        col = "green",
+        xlim = c(0, 150),
+        ylim = c(300, 2000))
+abline(income.assistance, col = "darkgreen")
+
+points(
+        components.sold.standalone,
+        total.components.income,
+        col = "magenta")
+abline(income.standalone, col = "purple")
