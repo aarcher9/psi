@@ -67,24 +67,23 @@ switch(test.name,
                 mean(incomes$assistances)
         },
         "1" = {
-                sink("Fig1.txt")
-                pdf(file = "Fig1.pdf")
+                sink("res/F1.txt")
                 X <- sales$assistances
                 Y <- sales$components$alone
                 X.lab = "# assistenze"
                 Y.lab = "# vendite componenti (FA)"
         },
         "2" = {
-                sink("Fig2.txt")
-                pdf(file = "Fig2.pdf")
+                sink("res/F2.txt")
+                pdf(file = "res/F2.pdf")
                 X <- sales$components$alone
                 Y <- incomes$components$total
                 X.lab = "# vendite componenti (FA)"
                 Y.lab = "$ ricavi sui componenti (C)"
         },
         "3" = {
-                sink("Fig3.txt")
-                pdf(file = "Fig3.pdf")
+                sink("res/F3.txt")
+                pdf(file = "res/F3.pdf")
                 X <- sales$components$through.assistances
                 Y <- incomes$components$total
                 X.lab = "# vendite componenti (A)"
@@ -104,10 +103,14 @@ B <- prec(lin.regr$coefficients[2])
 p.value <- prec(lin.mod$coefficients[7])
 Res <- lin.regr$residuals
 
+
+# Plot
+png(file = paste("res/plot-F", test.name, ".png"))
+
 plot(
         X, 
         Y,
-        main = "Regressione Lineare",
+        main = paste("Regressione Lineare", "F", test.name),
         bty = "l",
         xlab = X.lab,
         ylab = Y.lab,
@@ -116,11 +119,15 @@ plot(
         
 abline(lin.regr, col = "#9d5151")
 mtext(paste("A =", A, "  B =", B, "  r =", r))
+dev.off()
+
 
 # Ipotesi nulla B = 0
 t.test(Res, mu = 0, conf.level = 0.95)
 
+
 # Istogramma dei residui
+png(file = paste("res/hist-F", test.name, ".png"))
 hist(
         Res,
         breaks = "Sturge",
@@ -128,32 +135,42 @@ hist(
         xlab = "residuo",
         ylab = "frequenza",
         ylim = c(0, 20),
-        main = "Istogramma dei residui",
+        main = paste("Istogramma dei residui", "F", test.name),
         col = "burlywood")
+
+dev.off()
+
 
 # Test Kolmogorov-Smirnov 
 # Ipotesi nulla: i dati appartengono ad una distribuzione normale
 ks.test(unique(Res), "pnorm", exact = FALSE)
 
+
 # Residui
+png(file = paste("res/residual-F", test.name, ".png"))
 plot(
         rep(1:52), 
         Res,
-        main = "Grafico dei residui",
+        main = paste("Grafico dei residui", "F", test.name),
         xlab = "#",
         ylab = "residuo")
 
 abline(0, 0, col = "gray")
+dev.off()
 
 # Q-Q plot
+png(file = paste("res/qq-F", test.name, ".png"))
 qqnorm(
         Res, 
         pch = 1, 
         frame = FALSE,
         xlab = "quantili teorici",
         ylab = "quantili sperimentali",
-        main = "Grafico Q-Q",)
+        main = paste("Grafico Q-Q", "F", test.name))
 
 qqline(Res, col = "steelblue")
+
+# Chi-Quadrato
+chisq.test(Y, predict.lm(lin.regr, data.frame(x = X)), correct = FALSE)
 
 dev.off()

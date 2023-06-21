@@ -17,6 +17,8 @@ Residual standard error: 6.276 on 50 degrees of freedom
 Multiple R-squared:  0.8201,	Adjusted R-squared:  0.8165 
 F-statistic:   228 on 1 and 50 DF,  p-value: < 2.2e-16
 
+null device 
+          1 
 
 	One Sample t-test
 
@@ -29,12 +31,22 @@ sample estimates:
    mean of x 
 -5.18282e-16 
 
+null device 
+          1 
 
 	Asymptotic one-sample Kolmogorov-Smirnov test
 
 data:  unique(Res)
 D = 0.34492, p-value = 1.073e-05
 alternative hypothesis: two-sided
+
+null device 
+          1 
+
+	Pearson's Chi-squared test
+
+data:  Y and predict.lm(lin.regr, data.frame(x = X))
+X-squared = 1063.4, df = 1023, p-value = 0.185
 
 null device 
           1 
