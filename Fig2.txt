@@ -1,0 +1,40 @@
+
+Call:
+lm(formula = Y ~ X)
+
+Residuals:
+    Min      1Q  Median      3Q     Max 
+-278.32 -122.88    2.52  114.72  360.14 
+
+Coefficients:
+            Estimate Std. Error t value Pr(>|t|)    
+(Intercept)   91.406     61.448   1.488    0.143    
+X             24.374      1.369  17.806   <2e-16 ***
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+Residual standard error: 143.2 on 50 degrees of freedom
+Multiple R-squared:  0.8638,	Adjusted R-squared:  0.8611 
+F-statistic: 317.1 on 1 and 50 DF,  p-value: < 2.2e-16
+
+
+	One Sample t-test
+
+data:  Res
+t = -6.9472e-16, df = 51, p-value = 1
+alternative hypothesis: true mean is not equal to 0
+95 percent confidence interval:
+ -39.48649  39.48649
+sample estimates:
+    mean of x 
+-1.366428e-14 
+
+
+	Asymptotic one-sample Kolmogorov-Smirnov test
+
+data:  unique(Res)
+D = 0.5, p-value = 1.022e-11
+alternative hypothesis: two-sided
+
+null device 
+          1 
